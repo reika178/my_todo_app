@@ -28,40 +28,41 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text('My Todo'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
+      body: ListView(
+        children: List.generate(10, (index) {
+          return InkWell(
+            onTap: (){
+
+            },
+            child: Card(
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.all(10.0),
+                    child: ListTile(
+                      title: Text("テスト$index"),
+                      subtitle: Text("サブタイトル"),
+                    )
+                  ),
+                ],
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+          );
+        }
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), 
+      floatingActionButton: new FloatingActionButton(
+          child: new Icon(Icons.add),
+          onPressed: () {
+            
+          },
+      ),
     );
   }
 }
