@@ -11,7 +11,6 @@ class MyApp extends StatelessWidget {
       title: 'My Todo App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        // visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MyHomePage(title: 'My Todo'),
     );
@@ -69,9 +68,29 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: new FloatingActionButton(
           child: new Icon(Icons.add),
           onPressed: () {
-            
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddTodo()),
+            );
           },
       ),
     );
   }
+}
+
+class AddTodo extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar:AppBar(
+      title: Text('AddTodo'),
+      ),
+      body: Center(
+        child: RaisedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text('戻る'),
+        ),
+      ),
+  );
 }
