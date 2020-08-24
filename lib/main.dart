@@ -28,18 +28,27 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final items = List<String>.generate(20,(i) => "Item ${i + 1}");
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('My Todo'),
       ),
-      body: ListView(
-        children: List.generate(10, (index) {
-          return InkWell(
-            onTap: (){
+      body: ListView.builder(
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
 
+          return Dismissible(
+            key: Key(item),
+            onDismissed: (direction) {
+              setState(() {
+                items.removeAt(index);
+              });
             },
+              background: Container(
+                color: Colors.red),
             child: Card(
               child: Column(
                 children: <Widget>[
@@ -54,9 +63,9 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           );
+
         }
         ),
-      ),
       floatingActionButton: new FloatingActionButton(
           child: new Icon(Icons.add),
           onPressed: () {
