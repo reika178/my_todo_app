@@ -49,7 +49,11 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: ListView.builder(
         itemCount: items.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (BuildContext context, int index) {
+          Todo todo = Todo(
+            "タイトル $index",
+            "タイトル $indexのメモです。タイトル $indexのメモです。"
+          );
           final item = items[index];
 
           return Dismissible(
@@ -67,8 +71,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   Container(
                     margin: EdgeInsets.all(10.0),
                     child: ListTile(
-                      title: Text("テスト$index"),
-                      subtitle: Text("サブタイトル"),
+                      title: Text("${todo.title}"),
+                      subtitle: Text("${todo.note}"),
                     )
                   ),
                 ],
