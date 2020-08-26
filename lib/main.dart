@@ -4,6 +4,19 @@ void main() {
   runApp(MyApp());
 }
 
+class Todo {
+  String id;
+  String title;
+  String note;
+
+  Todo(this.title, this.note);
+
+  Todo.newTodo() {
+    title = "";
+    note = "";
+  }
+}
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
