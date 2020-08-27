@@ -41,6 +41,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final items = List<String>.generate(20,(i) => "Item ${i + 1}");
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,13 +72,19 @@ class _MyHomePageState extends State<MyHomePage> {
                   Container(
                     margin: EdgeInsets.all(10.0),
                     child: ListTile(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => EditTodo())
+                          );
+                      },
                       title: Text("${todo.title}"),
                       subtitle: Text("${todo.note}"),
                     )
                   ),
                 ],
               ),
-            ),
+            )
           );
 
         }
@@ -96,10 +103,75 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class AddTodo extends StatelessWidget {
+
+  // final DateFormat _format = DateFormat("yyyy-MM-dd HH:mm");
+
+  // final TodoBloc todoBloc;
+  final Todo todo;
+  final Todo _newTodo = Todo.newTodo();
+
+  AddTodo({Key key, @required this.todo}) {
+  // AddTodo({Key key, @required this.todoBloc, @required this.todo}) {
+    _newTodo.id = todo.id;
+    _newTodo.title = todo.title;
+    _newTodo.note = todo.note;
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar:AppBar(
       title: Text('AddTodo'),
+      ),
+      body: Container(
+        padding: const EdgeInsets.all(30.0),
+        child: Column(
+          children: <Widget>[
+            _titleTextFormField(),
+            _noteTextFormField(),
+            _confirmButton(context)
+          ],
+        ),
+      ),
+  );
+
+  Widget _titleTextFormField() => TextFormField(
+    decoration: InputDecoration(labelText: "タイトル"),
+    initialValue: _newTodo.title,
+    onChanged: _setTitle,
+  );
+
+  void _setTitle(String title) {
+    _newTodo.title = title;
+  }
+
+  Widget _noteTextFormField() => TextFormField(
+    decoration: InputDecoration(labelText: "メモ"),
+    initialValue: _newTodo.note,
+    maxLines: 3,
+    onChanged: _setNote,
+  );
+
+  void _setNote(String title) {
+    _newTodo.title = title;
+  }
+
+  Widget _confirmButton(BuildContext context) => RaisedButton(
+    child: Text("Add"),
+    onPressed: () {
+      // if (_newTodo.id == null) {
+
+      // }
+    Navigator.of(context).pop();
+    },
+  );
+
+}
+
+class EditTodo extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar:AppBar(
+      title: Text('EditTodo'),
       ),
       body: Center(
         child: RaisedButton(
