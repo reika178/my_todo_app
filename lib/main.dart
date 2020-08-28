@@ -94,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => AddTodo()),
+              MaterialPageRoute(builder: (context) => AddTodo(todo: Todo.newTodo())),
             );
           },
       ),
