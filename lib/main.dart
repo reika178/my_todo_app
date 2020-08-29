@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'dart:async';
+import 'dart:core';
+import 'package:uuid/uuid.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(TodoApp());
 }
 
 class Todo {
@@ -15,124 +19,184 @@ class Todo {
     title = "";
     note = "";
   }
+
+  Todo clone() {
+    Todo newTodo = Todo(title,note);
+    newTodo.id = id;
+    return newTodo;
+  }
+
+  assignUUID() {
+    id = Uuid().v4();
+  }
 }
 
-class MyApp extends StatelessWidget {
+class TodoBloc {
+  
+  static final List<Todo> sampleTodos = [];
+
+  final _todoController = StreamController<List<Todo>>();
+  Stream<List<Todo>> get todoStream => _todoController.stream;
+
+  getTodos() {
+    _todoController.sink.add(sampleTodos);
+  }
+
+  TodoBloc() {
+    getTodos();
+  }
+
+  dispose() {
+    _todoController.close();
+  }
+
+  create(Todo todo) {
+    todo.assignUUID();
+    sampleTodos.add(todo);
+    getTodos();
+  }
+
+  update(Todo todo) {
+    int _index = sampleTodos.indexWhere((Todo t) => t.id == todo.id);
+    if(_index >=0) {
+      sampleTodos[_index] = todo;
+      getTodos();
+    }
+  }
+
+  delete(String id) {
+    int _index = sampleTodos.indexWhere((Todo t) => t.id == id);
+    if(_index >= 0) {
+      sampleTodos.removeAt(_index);
+      getTodos();
+    }
+  }
+}
+
+class TodoApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'My Todo App',
+      title: ConstText.appTitle,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'My Todo'),
+      home: Provider<TodoBloc>(
+        create: (context) => new TodoBloc(),
+        dispose: (context, bloc) => bloc.dispose(),
+        child: TodoListView()
+        ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  final items = List<String>.generate(20,(i) => "Item ${i + 1}");
+class TodoListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('My Todo'),
-      ),
-      body: ListView.builder(
-        itemCount: items.length,
-        itemBuilder: (BuildContext context, int index) {
-          Todo todo = Todo(
-            "タイトル $index",
-            "タイトル $indexのメモです。タイトル $indexのメモです。"
-          );
-          final item = items[index];
+  final _bloc = Provider.of<TodoBloc>(context, listen: false);
 
-          return Dismissible(
-            key: Key(item),
-            onDismissed: (direction) {
-              setState(() {
-                items.removeAt(index);
-              });
-            },
-              background: Container(
-                color: Colors.red),
-            child: Card(
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    margin: EdgeInsets.all(10.0),
+    return Scaffold(
+      appBar: AppBar(title: Text(ConstText.todoListView)),
+      body: StreamBuilder<List<Todo>>(
+        stream: _bloc.todoStream,
+        builder: (BuildContext context, AsyncSnapshot<List<Todo>> snapshot) {
+          if (snapshot.hasData) {
+            return ListView.builder(
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+
+                Todo todo = snapshot.data[index];
+
+                return Dismissible(
+                  key: Key(todo.id),
+                  background: _backgroundOfDismissible(),
+                  secondaryBackground: _secondaryBackgroundOfDismissble(),
+                  onDismissed: (direction) {
+                      _bloc.delete(todo.id);
+                  },
+                  child: Card(
                     child: ListTile(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => EditTodo())
-                          );
+                        _moveToEditView(context, _bloc, todo);
                       },
                       title: Text("${todo.title}"),
                       subtitle: Text("${todo.note}"),
+                      isThreeLine: true,
                     )
                   ),
-                ],
-              ),
-            )
-          );
-
-        }
-        ),
-      floatingActionButton: new FloatingActionButton(
-          child: new Icon(Icons.add),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AddTodo(todo: Todo.newTodo())),
+                );
+              },
             );
-          },
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () { _moveToCreateView(context, _bloc);},
       ),
     );
   }
+
+_moveToEditView(BuildContext context, TodoBloc bloc, Todo todo) => Navigator.push(
+  context,
+  MaterialPageRoute(builder: (context) => AddTodo(todoBloc: bloc, todo: todo))
+);
+
+_moveToCreateView(BuildContext context, TodoBloc bloc) => Navigator.push(
+  context,
+  MaterialPageRoute(builder: (context) => AddTodo(todoBloc: bloc, todo: Todo.newTodo()))
+);
+
+_backgroundOfDismissible() => Container(
+  alignment: Alignment.centerLeft,
+  color: Colors.green,
+  child: Padding(
+    padding: EdgeInsets.fromLTRB(20,0,0,0),
+    child: Icon(Icons.done, color: Colors.white),
+  )
+);
+
+_secondaryBackgroundOfDismissble() => Container(
+  alignment: Alignment.centerRight,
+  color: Colors.green,
+  child: Padding(
+    padding: EdgeInsets.fromLTRB(0,0,20,0),
+    child: Icon(Icons.done, color: Colors.white),
+  )
+);
 }
+
 
 class AddTodo extends StatelessWidget {
 
-  // final DateFormat _format = DateFormat("yyyy-MM-dd HH:mm");
-
-  // final TodoBloc todoBloc;
+  final TodoBloc todoBloc;
   final Todo todo;
   final Todo _newTodo = Todo.newTodo();
 
-  AddTodo({Key key, @required this.todo}) {
-  // AddTodo({Key key, @required this.todoBloc, @required this.todo}) {
+  AddTodo({Key key, @required this.todoBloc, @required this.todo}) {
     _newTodo.id = todo.id;
     _newTodo.title = todo.title;
     _newTodo.note = todo.note;
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar:AppBar(
-      title: Text('AddTodo'),
-      ),
-      body: Container(
-        padding: const EdgeInsets.all(30.0),
-        child: Column(
-          children: <Widget>[
-            _titleTextFormField(),
-            _noteTextFormField(),
-            _confirmButton(context)
-          ],
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar:AppBar(title: Text(ConstText.todoEditView),),
+        body: Container(
+          padding: const EdgeInsets.all(30.0),
+          child: Column(
+            children: <Widget>[
+              _titleTextFormField(),
+              _noteTextFormField(),
+              _confirmButton(context)
+            ],
+          ),
         ),
-      ),
-  );
+     );
+   }
 
   Widget _titleTextFormField() => TextFormField(
     decoration: InputDecoration(labelText: "タイトル"),
@@ -151,35 +215,26 @@ class AddTodo extends StatelessWidget {
     onChanged: _setNote,
   );
 
-  void _setNote(String title) {
-    _newTodo.title = title;
+  void _setNote(String note) {
+    _newTodo.note = note;
   }
 
   Widget _confirmButton(BuildContext context) => RaisedButton(
     child: Text("Add"),
     onPressed: () {
-      // if (_newTodo.id == null) {
-
-      // }
+      if (_newTodo.id == null) {
+        todoBloc.create(_newTodo);
+      } else {
+        todoBloc.update(_newTodo);
+      }
     Navigator.of(context).pop();
     },
   );
-
 }
 
-class EditTodo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar:AppBar(
-      title: Text('EditTodo'),
-      ),
-      body: Center(
-        child: RaisedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: Text('戻る'),
-        ),
-      ),
-  );
+class ConstText {
+  static final appTitle = "Todo App";
+  static final todoListView = "Todo List";
+  static final todoEditView = "Todo Edit";
+  static final todoCreateView = "New Todo";
 }
