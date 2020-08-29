@@ -4,8 +4,9 @@ import 'dart:async';
 import 'dart:core';
 import 'package:uuid/uuid.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite/sqflite_api.dart';
+import 'package:sqflite/sqlite_api.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
 void main() {
@@ -45,7 +46,7 @@ class TodoBloc {
   final _todoController = StreamController<List<Todo>>();
   Stream<List<Todo>> get todoStream => _todoController.stream;
 
-  getTodos() {
+  getTodos() async {
     _todoController.sink.add(await DBProvider.db.getAllTodos());
   }
 
@@ -65,6 +66,7 @@ class TodoBloc {
 
   update(Todo todo) {
     DBProvider.db.updateTodo(todo);
+    getTodos();
   }
 
   delete(String id) {
@@ -129,7 +131,7 @@ class TodoListView extends StatelessWidget {
                 );
               },
             );
-          }
+          } 
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -270,7 +272,7 @@ class DBProvider {
       "CREATE TABLE $_tableName ("
       "id TEXT PRIMARY KEY,"
       "title TEXT,"
-      "note Text,"
+      "note TEXT"
       ")"
     );
   }
