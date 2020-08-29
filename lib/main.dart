@@ -3,6 +3,10 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import 'dart:core';
 import 'package:uuid/uuid.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/sqflite_api.dart';
+import 'package:path/path.dart';
+import 'dart:io';
 
 void main() {
   runApp(TodoApp());
@@ -13,33 +17,36 @@ class Todo {
   String title;
   String note;
 
-  Todo(this.title, this.note);
-
+  Todo({this.id, @required this.title, @required this.note});
   Todo.newTodo() {
     title = "";
     note = "";
   }
 
-  Todo clone() {
-    Todo newTodo = Todo(title,note);
-    newTodo.id = id;
-    return newTodo;
-  }
-
   assignUUID() {
     id = Uuid().v4();
   }
+
+  factory Todo.fromMap(Map<String, dynamic> json) => Todo(
+    id: json["id"],
+    title: json["title"],
+    note: json["note"] 
+  );
+
+  Map<String, dynamic> toMap() => {
+    "id": id,
+    "title": title,
+    "note": note
+  };
 }
 
 class TodoBloc {
   
-  static final List<Todo> sampleTodos = [];
-
   final _todoController = StreamController<List<Todo>>();
   Stream<List<Todo>> get todoStream => _todoController.stream;
 
   getTodos() {
-    _todoController.sink.add(sampleTodos);
+    _todoController.sink.add(await DBProvider.db.getAllTodos());
   }
 
   TodoBloc() {
@@ -52,24 +59,17 @@ class TodoBloc {
 
   create(Todo todo) {
     todo.assignUUID();
-    sampleTodos.add(todo);
+    DBProvider.db.createTodo(todo);
     getTodos();
   }
 
   update(Todo todo) {
-    int _index = sampleTodos.indexWhere((Todo t) => t.id == todo.id);
-    if(_index >=0) {
-      sampleTodos[_index] = todo;
-      getTodos();
-    }
+    DBProvider.db.updateTodo(todo);
   }
 
   delete(String id) {
-    int _index = sampleTodos.indexWhere((Todo t) => t.id == id);
-    if(_index >= 0) {
-      sampleTodos.removeAt(_index);
-      getTodos();
-    }
+    DBProvider.db.deleteTodo(id);
+    getTodos();
   }
 }
 
@@ -237,4 +237,77 @@ class ConstText {
   static final todoListView = "Todo List";
   static final todoEditView = "Todo Edit";
   static final todoCreateView = "New Todo";
+}
+
+// データベースを取得する関数を追加
+
+class DBProvider {
+  DBProvider._();
+  static final DBProvider db = DBProvider._();
+
+  static Database _database;
+  static final _tableName = "Todo";
+
+  Future<Database> get database async {
+    if (_database != null)
+      return _database;
+
+    // DBがなかったら作る
+    _database = await initDB();
+    return _database;
+  }
+
+  Future<Database> initDB() async {
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+
+    String path = join(documentsDirectory.path, "TodoDB.db");
+
+    return await openDatabase(path, version: 1, onCreate: _createTable);
+  }
+
+  Future<void> _createTable(Database db, int version) async {
+    return await db.execute(
+      "CREATE TABLE $_tableName ("
+      "id TEXT PRIMARY KEY,"
+      "title TEXT,"
+      "note Text,"
+      ")"
+    );
+  }
+
+  createTodo(Todo todo) async {
+    final db = await database;
+    var res = await db.insert(_tableName, todo.toMap());
+    return res;
+  }
+
+  getAllTodos() async {
+    final db = await database;
+    var res = await db.query(_tableName);
+    List<Todo> list =
+        res.isNotEmpty ? res.map((c) => Todo.fromMap(c)).toList() : [];
+    return list;
+  }
+
+  updateTodo(Todo todo) async {
+    final db = await database;
+    var res = await db.update(
+      _tableName,
+      todo.toMap(),
+      where: "id = ?",
+      whereArgs: [todo.id]
+    );
+    return res;
+  }
+
+  deleteTodo(String id) async {
+    final db = await database;
+    var res = db.delete(
+      _tableName,
+      where: "id = ?",
+      whereArgs: [id]
+    );
+    return res;
+  }
+
 }
