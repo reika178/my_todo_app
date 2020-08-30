@@ -8,6 +8,7 @@ import 'package:sqflite/sqlite_api.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() {
   runApp(TodoApp());
@@ -80,6 +81,7 @@ class TodoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: ConstText.appTitle,
       theme: ThemeData(
         primarySwatch: Colors.blue,
