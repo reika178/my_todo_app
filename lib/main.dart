@@ -24,16 +24,20 @@ class Todo {
     title = "";
     note = "";
   }
+  // @required 必須パラメターとなる
 
   assignUUID() {
     id = Uuid().v4();
   }
+    // ランダムなIDを取得
 
   factory Todo.fromMap(Map<String, dynamic> json) => Todo(
     id: json["id"],
     title: json["title"],
     note: json["note"] 
   );
+    //   factory コンストラクターではオブジェクトの生成から制御。
+    // これを使って Singleton パターンのオブジェクトを作ることができる。
 
   Map<String, dynamic> toMap() => {
     "id": id,
@@ -112,7 +116,8 @@ class TodoListView extends StatelessWidget {
               itemBuilder: (BuildContext context, int index) {
 
                 Todo todo = snapshot.data[index];
-
+                
+                // スワイプして消すDismissible
                 return Dismissible(
                   key: Key(todo.id),
                   background: _backgroundOfDismissible(),
@@ -244,7 +249,6 @@ class ConstText {
 }
 
 // データベースを取得する関数を追加
-
 class DBProvider {
   DBProvider._();
   static final DBProvider db = DBProvider._();
