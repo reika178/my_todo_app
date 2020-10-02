@@ -36,8 +36,15 @@ class Todo {
     title: json["title"],
     note: json["note"] 
   );
-    //   factory コンストラクターではオブジェクトの生成から制御。
+    // factory コンストラクターではオブジェクトの生成から制御。
     // これを使って Singleton パターンのオブジェクトを作ることができる。
+
+    // Map:2つの情報をキー（key）と値（value）をペアとして格納する。
+    // Map<キーの型, 値の型> マップ変数 = new HashMap<キーの型, 値の型>();
+
+    // JSON:JavaScript Object Notationの略で、テキストベースのデータフォーマット。
+
+    // fromMap関数:typeの新しいインスタンスを作成し、dataObjectのデータをそのインスタンスにマッピングする。
 
   Map<String, dynamic> toMap() => {
     "id": id,
@@ -45,15 +52,25 @@ class Todo {
     "note": note
   };
 }
+    // toMap():このイベントを、StandardMessageCodecでエンコードできるマップに変換。
 
 class TodoBloc {
   
   final _todoController = StreamController<List<Todo>>();
   Stream<List<Todo>> get todoStream => _todoController.stream;
+  // StreamController:制御するストリームを持つコントローラー。
+  // ストリームでデータ、エラー、および完了イベントを送信できる。
+  // このクラスを使用して、他の人がリッスンできる単純なストリームを作成し、そのストリームにイベントをプッシュできる。
 
   getTodos() async {
     _todoController.sink.add(await DBProvider.db.getAllTodos());
   }
+    // 同期操作：同期操作は、完了するまで他の操作の実行をブロック。
+    // 同期機能：同期機能は同期操作のみを実行。
+    // 非同期操作：開始されると、非同期操作により、完了する前に他の操作を実行できる。
+    // 非同期関数：非同期関数は、少なくとも1つの非同期操作を実行し、同期操作も実行できる。
+
+    // async：async関数の本体の前にキーワードを使用して、非同期としてマークすることができる。
 
   TodoBloc() {
     getTodos();
@@ -87,7 +104,6 @@ class TodoApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: ConstText.appTitle,
-      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -117,7 +133,7 @@ class TodoListView extends StatelessWidget {
               itemBuilder: (BuildContext context, int index) {
 
                 Todo todo = snapshot.data[index];
-                
+
                 // スワイプして消すDismissible
                 return Dismissible(
                   key: Key(todo.id),
