@@ -115,16 +115,19 @@ class TodoApp extends StatelessWidget {
     );
   }
 }
+// Provider:ツリーの下位にある Widget に情報を効率良く渡すことができる。
 
 class TodoListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
   final _bloc = Provider.of<TodoBloc>(context, listen: false);
+  // false: リビルドを防ぐ。
 
     return Scaffold(
       appBar: AppBar(title: Text(ConstText.todoListView)),
       body: StreamBuilder<List<Todo>>(
+      // StreamBuilder:指定したstreamにデータが流れてくると、自動で再描画が実行される。
         stream: _bloc.todoStream,
         builder: (BuildContext context, AsyncSnapshot<List<Todo>> snapshot) {
           if (snapshot.hasData) {
