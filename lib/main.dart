@@ -71,6 +71,7 @@ class TodoBloc {
     // 非同期関数：非同期関数は、少なくとも1つの非同期操作を実行し、同期操作も実行できる。
 
     // async：async関数の本体の前にキーワードを使用して、非同期としてマークすることができる。
+    // sinkに流す
 
   TodoBloc() {
     getTodos();
@@ -79,6 +80,8 @@ class TodoBloc {
   dispose() {
     _todoController.close();
   }
+  // dispose:Stateを永続的に削除する
+  // 画面をおとすときやストリーム停止で使う
 
   create(Todo todo) {
     todo.assignUUID();
