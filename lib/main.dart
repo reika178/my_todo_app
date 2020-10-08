@@ -133,6 +133,7 @@ class TodoListView extends StatelessWidget {
       // StreamBuilder:指定したstreamにデータが流れてくると、自動で再描画が実行される。
         stream: _bloc.todoStream,
         builder: (BuildContext context, AsyncSnapshot<List<Todo>> snapshot) {
+          // snapshot:アプリの 初回の起動の高速化 のために使っている。
           if (snapshot.hasData) {
             return ListView.builder(
               itemCount: snapshot.data.length,
