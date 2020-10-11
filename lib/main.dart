@@ -291,10 +291,12 @@ class DBProvider {
 
   Future<Database> initDB() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    // getApplicationDocumentsDirectory():アプリケーション専用のファイルを配置するディレクトリへのパスを返す。
 
     String path = join(documentsDirectory.path, "TodoDB.db");
 
     return await openDatabase(path, version: 1, onCreate: _createTable);
+    // openDatabaseメソッドを使用することでDBインスタンスを取得することができる。
   }
 
   Future<void> _createTable(Database db, int version) async {
